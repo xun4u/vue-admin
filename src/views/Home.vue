@@ -17,15 +17,18 @@
             active-text-color="#ffd04b"
             unique-opened
             :collapse="isCollapse"
-            :collapse-transition="false">
+            :collapse-transition="false"
+            router
+            :default-active="nowPath">
           <!-- 级菜单-->
-          <el-submenu :index="item.id+''" v-for="item in menuList" :key="item.id" >
+          <el-submenu :index="item.id+''" v-for="item in menuList" :key="item.id">
             <template slot="title">
               <i :class="iconObj[item.id]"></i>
               <span>{{ item.authName }}</span>
             </template>
             <!--二级菜单-->
-            <el-menu-item v-for="secItem in item.children" :key="secItem.id" :index="secItem.id+''">
+            <el-menu-item v-for="secItem in item.children" :key="secItem.id" :index="'/'+ secItem.path"
+                          @click="saveNowPath('/'+secItem.path)">
               <template slot="title">
                 <i class="el-icon-menu"></i>
                 <span>{{ secItem.authName }}</span>
@@ -45,34 +48,40 @@
 <script lang="ts">
 export default {
   name: 'Home',
-  data(){
-    return{
-      menuList:[],
-      iconObj:{
-        '125' :'iconfont icon-yonghuguanli',
-        '103' :'iconfont icon-cedaohang-quanxian',
-        '101' :'iconfont icon-shangpinguanli',
-        '102' :'iconfont icon-dingdanguanli',
-        '145' :'iconfont icon-icon-test',
+  data() {
+    return {
+      menuList: [],
+      iconObj: {
+        '125': 'iconfont icon-yonghuguanli',
+        '103': 'iconfont icon-cedaohang-quanxian',
+        '101': 'iconfont icon-shangpinguanli',
+        '102': 'iconfont icon-dingdanguanli',
+        '145': 'iconfont icon-icon-test',
       },
-      isCollapse:false
-    }
+      isCollapse: false,
+      nowPath: ''
+    };
   },
   created() {
     this.getMenuList();
+    this.nowPath = window.sessionStorage.getItem('nowPath');
   },
   methods: {
     async getMenuList() {
       const {data: res} = await this.$http.get('menus');
-      if(res.meta.status !== 200)return this.$message.error(res.meta.msg)
-      this.menuList = res.data
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+      this.menuList = res.data;
     },
     logout() {
       window.sessionStorage.clear();
       this.$router.push('/login');
     },
-    toggleCollapse(){
-      this.isCollapse = !this.isCollapse
+    toggleCollapse() {
+      this.isCollapse = !this.isCollapse;
+    },
+    saveNowPath(nowPath) {
+      window.sessionStorage.setItem('nowPath', nowPath);
+      this.nowPath = nowPath;
     }
 
   }
@@ -121,10 +130,12 @@ export default {
 .el-main {
   background: #eaedf1;
 }
-.iconfont{
+
+.iconfont {
   margin-right: 10px;
 }
-.toggle-button{
+
+.toggle-button {
   text-align: center;
   color: #fff;
   font-size: 10px;
